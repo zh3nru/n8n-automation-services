@@ -2,7 +2,7 @@
 
 This repository contains n8n workflows designed to automate common data processing tasks across Gmail, Google Sheets, Google Drive, and Telegram, with the use of AI models such as Google Gemini and OpenAI GPT.
 
-## Workflow 1 – Gmail Email Processing & Organization
+## Gmail Email Processing & Organization
 
 **Purpose:**  
 Automatically monitor a Gmail inbox, categorize unlabeled emails using OpenAI GPT, store key data in Google Sheets, and organize attachments in Google Drive.
@@ -24,7 +24,7 @@ Automatically monitor a Gmail inbox, categorize unlabeled emails using OpenAI GP
      - **Label**
      - **Date Received**
 
-## Workflow 2 – Telegram Receipt Processing
+## Telegram Receipt Processing
 
 **Purpose:**  
 Accept receipt photos from Telegram, use Google Gemini to extract key information, and store both the structured data and the original images.
