@@ -61,7 +61,7 @@ Accept receipt photos from Telegram, use Google Gemini to extract key informatio
 - Google Gemini API key
 - OpenAI API key
 
-## Deployment Notes
+## Usage Notes
 
 - Import the workflow JSON files into your n8n instance.
 - Set up credentials for:
