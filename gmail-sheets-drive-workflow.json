@@ -1,5 +1,5 @@
 {
-  "name": "Workflow-1",
+  "name": "gmail-sheets-drive-workflow",
   "nodes": [
     {
       "parameters": {
