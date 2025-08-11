@@ -71,5 +71,5 @@ Accept receipt photos from Telegram, use Google Gemini to extract key informatio
   - Telegram
   - Google Gemini
   - OpenAI GPT
-- Adjust folder paths and Google Sheet IDs as needed.
+- Adjust labels, folder paths, and Google Sheet IDs as needed.
 - Configure trigger intervals to match your specific needs.
