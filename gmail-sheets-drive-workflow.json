@@ -1,0 +1,945 @@
+{
+  "name": "Workflow-1",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2096,
+        112
+      ],
+      "id": "b57b3b09-825a-496d-9520-b72ab627de7e",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "rflV1ImGOjWyAAn5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ $json.attachments }}",
+        "name": "=",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('If (Date)').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        496,
+        288
+      ],
+      "id": "04afd875-b751-4a3a-b615-257d2d7ad20a",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "MEsTxGeK7k4ZJDsj",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "711dae9b-3435-4f2a-950b-ae5f3d6f2065",
+              "name": "attachments",
+              "value": "={{ $('Get a message').all()[0].binary.keys() }}",
+              "type": "array"
+            },
+            {
+              "id": "f024558e-e2fe-44b8-bd8f-cf801a757df2",
+              "name": "message_id",
+              "value": "={{ $('Get a message').all()[0].json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        288
+      ],
+      "id": "55695476-679e-4d80-9f18-af215e00c5c1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "attachments",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        160,
+        288
+      ],
+      "id": "9863a075-8b04-4dfc-b540-57a0141fb281",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "message_id",
+              "field2": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        336,
+        288
+      ],
+      "id": "9badfe58-f10c-4f3e-8465-e6c2035c5187",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1056,
+        192
+      ],
+      "id": "6f7b3465-952d-4891-b476-39a3f25bec29",
+      "name": "Get a message",
+      "webhookId": "e6b5247e-17ae-4140-ad57-d29b8de08384",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "rflV1ImGOjWyAAn5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "operation": "get",
+        "labelId": "={{ $json.labelIds.filter(id => id.startsWith('Label')).find(id => $json.labelIds.includes(id)) }}\n"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -880,
+        528
+      ],
+      "id": "34619c1b-4c9d-4c9e-836d-8a1d96957fac",
+      "name": "Get a label info",
+      "webhookId": "e68f9635-fe49-46f8-8525-30a6b1d51166",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "rflV1ImGOjWyAAn5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1WZCaaT45J2LHzwhQEHXYR96Nt1deYlWiZyE9zIpBKnU",
+          "mode": "list",
+          "cachedResultName": "Workflow-1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WZCaaT45J2LHzwhQEHXYR96Nt1deYlWiZyE9zIpBKnU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.name }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Sender Email": "={{ $('Get a message').item.json.from.value[0].address }}",
+            "Sender Name": "={{ $('Get a message').item.json.from.value[0].name }}",
+            "Date Received": "={{ $('Get a message').item.json.date.split(\"T\")[0] }}",
+            "Subject": "={{ $('Get a message').item.json.subject }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date Received",
+              "displayName": "Date Received",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sender Name",
+              "displayName": "Sender Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sender Email",
+              "displayName": "Sender Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -640,
+        288
+      ],
+      "id": "238b1f89-7633-49b2-9088-1faf07ea5d2e",
+      "name": "Insert data to Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pauEUSc6TYBobnS0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $('Get a message').item.json.date.split(\"T\")[0] }}",
+        "returnAll": true,
+        "filter": {
+          "whatToSearch": "folders",
+          "includeTrashed": false
+        },
+        "options": {
+          "fields": [
+            "id",
+            "name",
+            "mimeType"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        48,
+        496
+      ],
+      "id": "dc54497b-27c0-4f81-a7a9-43de6ed40970",
+      "name": "Check if date folder exist",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "MEsTxGeK7k4ZJDsj",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4e426f01-ea0c-4952-a6ee-3b8cdb6d8fd7",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "={{ $('Get a message').item.json.date.split(\"T\")[0] }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "3bdcfbd0-b538-42fc-8084-6729719ed93a",
+              "leftValue": "={{ $json.values() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        496
+      ],
+      "id": "8e7deaa9-eb40-4c97-a9d5-73f7e5be62e1",
+      "name": "If (Date)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4e426f01-ea0c-4952-a6ee-3b8cdb6d8fd7",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "={{ $('Get a label info').item.json.name }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c2c2a8d3-88d6-47e8-b8d5-703c5d6a61b6",
+              "leftValue": "={{ $json.values() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -144,
+        496
+      ],
+      "id": "73a61307-686c-4b3b-bba9-4c5b9314478f",
+      "name": "If (Label)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $('Get a message').item.json.date.split(\"T\")[0] }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('If (Label)').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        336,
+        704
+      ],
+      "id": "20b68d53-416f-4190-bfe2-b1efc9461464",
+      "name": "Create date folder",
+      "executeOnce": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "MEsTxGeK7k4ZJDsj",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $('Get a label info').item.json.name }}",
+        "returnAll": true,
+        "filter": {
+          "whatToSearch": "folders",
+          "includeTrashed": false
+        },
+        "options": {
+          "fields": [
+            "id",
+            "name",
+            "mimeType"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -304,
+        496
+      ],
+      "id": "51cda1c0-deb0-4c01-908e-1053e70fd160",
+      "name": "Check if label folder exist",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "MEsTxGeK7k4ZJDsj",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $('Get a message').item.json.from.value[0].name }}",
+        "returnAll": true,
+        "filter": {
+          "whatToSearch": "folders",
+          "includeTrashed": false
+        },
+        "options": {
+          "fields": [
+            "name",
+            "id",
+            "mimeType"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -656,
+        512
+      ],
+      "id": "f1980eeb-6e3d-4c50-b115-0519bdb342dd",
+      "name": "Check if sender name folder exist",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "MEsTxGeK7k4ZJDsj",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0340d2ce-6f1a-4b79-a64a-3065adcd3c54",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "={{ $('Get a message').all()[0].json.from.value[0].name }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "b0dceaa9-2ccf-490f-8aba-927efbeb4a31",
+              "leftValue": "={{ $json.values() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -480,
+        512
+      ],
+      "id": "4f859a75-2829-4e3a-9c95-cb9d3aa88d08",
+      "name": "If (Sender Name)"
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $('Get a label info').item.json.name }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Check if sender name folder exist').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -16,
+        752
+      ],
+      "id": "d3d22e47-fe3b-4762-8c7d-790f260fb551",
+      "name": "Create label folder",
+      "executeOnce": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "MEsTxGeK7k4ZJDsj",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $('Get a message').all()[0].json.from.value[0].name }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1i7XuIM7mjpvia-sFtbsmjKD15h812XCE",
+          "mode": "list",
+          "cachedResultName": "Workflow-1",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1i7XuIM7mjpvia-sFtbsmjKD15h812XCE"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        688
+      ],
+      "id": "0e147527-da62-40b8-b854-feb8b8211218",
+      "name": "Create sender name folder",
+      "executeOnce": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "MEsTxGeK7k4ZJDsj",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an email classifier.  \nYour task is to read the content of an email (including subject line and body text) and assign one of the following labels:  \n- Work  \n- School  \n- Personal  \n\n- Choose exactly one label.  \n- \"Work\" = anything related to employment, business, clients, or professional activities.  \n- \"School\" = anything related to education, classes, assignments, academic events, or teachers.  \n- \"Personal\" = anything related to hobbies, friends, family, shopping, or non-professional matters.  \n- If the content fits more than one category, choose the most relevant one based on the sender and main topic.  \n\nReturn your answer as a single word: Work, School, or Personal.",
+              "role": "model"
+            },
+            {
+              "content": "={{ $json.subject + \"\\n\\n\" + $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1936,
+        112
+      ],
+      "id": "d3973a98-ece8-45f0-b652-4fc1d89506ee",
+      "name": "Message a model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZyiFVIvsKIdSp4Zh",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').all()[0].json.id }}",
+        "labelIds": "={{ $json.labelId }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1312,
+        112
+      ],
+      "id": "7fbaf393-b444-4853-a48a-fdd0972e6fd3",
+      "name": "Add label to message",
+      "webhookId": "948a1a4a-1649-482b-b33b-fc7770ab66fd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "rflV1ImGOjWyAAn5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1664,
+        112
+      ],
+      "id": "1ad4ea59-4de1-452c-a1c2-0234c7ab06a2",
+      "name": "Get many labels",
+      "webhookId": "0c9475f3-0a51-4a31-b3e7-3f57be75fcc4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "rflV1ImGOjWyAAn5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const model_output = $('Message a model1').first().json.content.parts[0].text.trim().toLowerCase();\n\nfor (const item of $input.all()) {\n  const label_name = item.json.name.trim().toLowerCase();\n  \n  if (label_name === model_output) {\n    return [{ json: { labelId: item.json.id } }];\n  }\n}\n\nreturn [{ json: { error: `No matching label found for \"${model_output}\"` } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1504,
+        112
+      ],
+      "id": "90fca368-bd38-4e6d-999c-6dd0a7f9e3c1",
+      "name": "Get label id"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "Get a label info",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get a label info": {
+      "main": [
+        [
+          {
+            "node": "Insert data to Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check if sender name folder exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert data to Google Sheets": {
+      "main": [
+        []
+      ]
+    },
+    "Check if date folder exist": {
+      "main": [
+        [
+          {
+            "node": "If (Date)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If (Date)": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create date folder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check if label folder exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If (Label)": {
+      "main": [
+        [
+          {
+            "node": "Check if date folder exist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create label folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create date folder": {
+      "main": [
+        [
+          {
+            "node": "Check if date folder exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if label folder exist": {
+      "main": [
+        [
+          {
+            "node": "If (Label)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if sender name folder exist": {
+      "main": [
+        [
+          {
+            "node": "If (Sender Name)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If (Sender Name)": {
+      "main": [
+        [
+          {
+            "node": "Check if label folder exist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create sender name folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create sender name folder": {
+      "main": [
+        [
+          {
+            "node": "Check if sender name folder exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create label folder": {
+      "main": [
+        [
+          {
+            "node": "Check if label folder exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Get many labels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many labels": {
+      "main": [
+        [
+          {
+            "node": "Get label id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get label id": {
+      "main": [
+        [
+          {
+            "node": "Add label to message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "dd323b89-3ac7-4b5f-a1d9-ab000f22bfd5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "122f53a69203e6d0c46f57dc918717a8cf4cf4f0748fe80460e298eb8d88828e"
+  },
+  "id": "mdb9AnLevFyHwp0l",
+  "tags": []
+}
