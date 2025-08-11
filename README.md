@@ -20,9 +20,9 @@ Automatically monitor a Gmail inbox, categorize unlabeled emails using OpenAI GP
 3. **Attachment Handling:**  
    - Downloads all attachments to **Google Drive**.
    - Groups attachments in folders by:
+     - **Sender Name**
      - **Label**
      - **Date Received**
-     - **Sender Name** (folder name = sender's name)
 
 ## Workflow 2 – Telegram Receipt Processing
 
@@ -71,5 +71,5 @@ Accept receipt photos from Telegram, use Google Gemini to extract key informatio
   - Telegram
   - Google Gemini
   - OpenAI GPT
-- Adjust labels, folder paths, and Google Sheet IDs as needed.
+- Adjust labels, folder paths, and Google Sheet rows and IDs as needed.
 - Configure trigger intervals to match your specific needs.
