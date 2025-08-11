@@ -1,11 +1,11 @@
 # n8n Automated Services
 
-This repository contains n8n workflows designed to automate common data processing tasks across Gmail, Google Sheets, Google Drive, and Telegram, with the use of AI models such as Google Gemini and OpenAI GPT.
+This repository contains n8n workflows designed to automate common data processing tasks across Gmail, Google Sheets, Google Drive, and Telegram, with the use of the AI model Google Gemini.
 
 ## [Gmail Email Processing & Organization](https://github.com/zh3nru/n8n-automation-services/blob/main/gmail-sheets-drive-workflow.json)
 
 **Purpose:**  
-Automatically monitor a Gmail inbox, categorize unlabeled emails using OpenAI GPT, store key data in Google Sheets, and organize attachments in Google Drive.
+Automatically monitor a Gmail inbox, categorize unlabeled emails using Google Gemini, store key data in Google Sheets, and organize attachments in Google Drive.
 
 **Process Overview:**
 1. **Inbox Monitoring:**  
@@ -59,7 +59,6 @@ Accept receipt photos from Telegram, use Google Gemini to extract key informatio
 - Google Drive API access
 - Telegram Bot API token
 - Google Gemini API key
-- OpenAI API key
 
 ## Usage Notes
 
@@ -70,6 +69,5 @@ Accept receipt photos from Telegram, use Google Gemini to extract key informatio
   - Google Drive
   - Telegram
   - Google Gemini
-  - OpenAI GPT
 - Adjust labels, folder paths, and Google Sheet rows and IDs as needed.
 - Configure trigger intervals to match your specific needs.
