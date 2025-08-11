@@ -1,0 +1,569 @@
+{
+  "name": "telegram-sheets-drive-workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b3c97112-bf93-4f95-a026-c6c077113dc4",
+      "name": "Telegram Trigger",
+      "webhookId": "a8275f35-67ba-496d-a86f-57776d6b2013",
+      "credentials": {
+        "telegramApi": {
+          "id": "X50BgsYma5GwWoB1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.photo[0].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "17bc7604-d839-4b83-ab6e-d28058e8c7f7",
+      "name": "Get a file",
+      "webhookId": "12bd46a0-488b-40e7-a794-b02063136bdd",
+      "credentials": {
+        "telegramApi": {
+          "id": "X50BgsYma5GwWoB1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash"
+        },
+        "text": "# System Role\nYou are an intelligent assistant that is great in extracting details in a photo and parsing document, specifically receipts. \n\n# JSON Format\nGiven the text of a receipt, extract the following key details in JSON format:\nmerchant_name: Business, vendor, or store name commonly listed at the top of the receipt\nmerchant_location: merchant_name: Business, vendor, or store location address\ndate: Date of the transaction in YYYY-MM-DD format\ntime: Time of the transaction in HH:MM format\ntotal_amount: The total amount paid\npayment_method: Method of payment either cash, card, or the like\nitems: Name or description of the item\nitem_quantity: Total number of the item\nitem_price: Price of the item\ntotal_price: The total price paid\n\nIf any field does not have a value, put \"N/A\" instead. Do not make up or hallucinate any data. Make sure to only extract information that is explicitly present in the receipt text.",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "cdcedcff-f75b-4a86-b2a6-926c49f00b03",
+      "name": "Analyze image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZyiFVIvsKIdSp4Zh",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ $json.images }}",
+        "name": "={{ $json.image_name }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Check if date folder exist').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        720,
+        368
+      ],
+      "id": "f3d9f08c-8200-4320-b03a-05d8c26c7b08",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "MEsTxGeK7k4ZJDsj",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "563bd08b-7ccd-46c6-a5de-ca267c3b3244",
+              "name": "=images",
+              "value": "={{ $('Get a file').item.binary.keys() }}",
+              "type": "array"
+            },
+            {
+              "id": "8139b12f-127e-4ea8-a599-d8a1f2969c2b",
+              "name": "image_name",
+              "value": "={{ $('Get a file').item.binary.values().map((file) => file.fileName) }}",
+              "type": "array"
+            },
+            {
+              "id": "463df876-d37f-429c-a8b4-cc928253810a",
+              "name": "image_id",
+              "value": "={{ $('Get a file').item.json.result.file_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        192
+      ],
+      "id": "e64028ef-4895-4033-bde4-70305e53fa40",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "images",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        688,
+        192
+      ],
+      "id": "3a02e462-10c5-4c14-ab4c-c161ef92feed",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "image_id",
+              "field2": "result.file_id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        512,
+        368
+      ],
+      "id": "3a355253-e5f1-43c8-9f17-19eed91f9e77",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $json.content.parts[0].text;\n\nconst match = raw.match(/```json\\s*([\\s\\S]*?)\\s*```/);\nif (!match) {\n  throw new Error('No JSON fence found');\n}\nlet parsed;\ntry {\n  parsed = JSON.parse(match[1].trim());\n} catch {\n  throw new Error('Invalid JSON content');\n}\n\nreturn { json: parsed };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        0
+      ],
+      "id": "29e51456-9c95-4b7d-94ce-cdeac0c02bd9",
+      "name": "Parse output data"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "12hiLOgt3E08uw9-UZtCfM_AiM7Awvtw_c0oWRSqAW78",
+          "mode": "list",
+          "cachedResultName": "Workflow-2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12hiLOgt3E08uw9-UZtCfM_AiM7Awvtw_c0oWRSqAW78/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12hiLOgt3E08uw9-UZtCfM_AiM7Awvtw_c0oWRSqAW78/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ `${$json.date}, ${$json.time}` }}",
+            "Items": "={{ $json.items[0].item_name }}",
+            "Item Quantity": "={{ $json.items[0].item_quantity }}",
+            "Item Price": "={{ $json.items[0].item_price }}",
+            "Total Price": "={{ $json.items[0].total_price }}",
+            "Merchant Name": "={{ $json.merchant_name }}",
+            "Merchant Location": "={{ $json.merchant_location }}",
+            "Payment Method": "={{ $json.payment_method }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Items",
+              "displayName": "Items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Item Quantity",
+              "displayName": "Item Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Item Price",
+              "displayName": "Item Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Price",
+              "displayName": "Total Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Merchant Name",
+              "displayName": "Merchant Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Merchant Location",
+              "displayName": "Merchant Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payment Method",
+              "displayName": "Payment Method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        784,
+        0
+      ],
+      "id": "24555128-9838-4f0d-8dc1-ac56bf3f8f86",
+      "name": "Insert data to Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pauEUSc6TYBobnS0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ new Date($('Telegram Trigger').item.json.message.date * 1000).toISOString().split('T')[0] }}",
+        "returnAll": true,
+        "filter": {},
+        "options": {
+          "fields": [
+            "name",
+            "mimeType",
+            "id"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        0,
+        240
+      ],
+      "id": "b0fcb46a-3844-4cb1-8a33-608f12940111",
+      "name": "Check if date folder exist",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "MEsTxGeK7k4ZJDsj",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "204c1b21-9c7e-4365-9379-e8df5fae850c",
+              "leftValue": "={{ $json.values() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        256
+      ],
+      "id": "9740440f-eab9-46e6-913d-783f6941582c",
+      "name": "If (date)"
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ new Date($('Telegram Trigger').item.json.message.date * 1000).toISOString().split('T')[0] }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1xiyKOwTPiKKm1KVn-fXvIrVKoOXz-5ZK",
+          "mode": "list",
+          "cachedResultName": "Workflow-2",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1xiyKOwTPiKKm1KVn-fXvIrVKoOXz-5ZK"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        192,
+        512
+      ],
+      "id": "44e52f73-63f6-4594-a7e2-82b0346ca7ba",
+      "name": "Create date folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "MEsTxGeK7k4ZJDsj",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Check if date folder exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Parse output data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse output data": {
+      "main": [
+        [
+          {
+            "node": "Insert data to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert data to Google Sheets": {
+      "main": [
+        []
+      ]
+    },
+    "Check if date folder exist": {
+      "main": [
+        [
+          {
+            "node": "If (date)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If (date)": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create date folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create date folder": {
+      "main": [
+        [
+          {
+            "node": "Check if date folder exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "747ad748-e978-4445-8c2f-ffeb86d0e1bd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "122f53a69203e6d0c46f57dc918717a8cf4cf4f0748fe80460e298eb8d88828e"
+  },
+  "id": "inVIZ4YXSXTVrD4S",
+  "tags": []
+}
